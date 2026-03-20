@@ -65,7 +65,7 @@ def transcribe_audio(audio_path, model_name="base"):
     result = model.transcribe(audio_path)
     return result["text"]
 
-def summarize_text(text, api_url, api_key, model_name="gpt-3.5-turbo"):
+def summarize_text(text, api_url, api_key, model_name="gpt-3.5-turbo", max_tokens=1000):
     """Summarizes text using an OpenAI-compatible API."""
     print(f"--- Summarizing transcript using LLM ({model_name}) ---")
     
@@ -83,6 +83,7 @@ def summarize_text(text, api_url, api_key, model_name="gpt-3.5-turbo"):
     try:
         response = client.chat.completions.create(
             model=model_name,
+            max_tokens=max_tokens,
             messages=[
                 {"role": "system", "content": "You are a professional video summarizer."},
                 {"role": "user", "content": prompt}
@@ -101,6 +102,7 @@ def main():
     parser.add_argument("--llm-url", default="http://localhost:1234/v1", help="URL for the OpenAI-compatible LLM (e.g., LM Studio local URL)")
     parser.add_argument("--llm-key", default="", help="API Key for the LLM (if using a cloud provider)")
     parser.add_argument("--llm-model", default="local-model", help="Model name for the LLM API")
+    parser.add_argument("--max-tokens", type=int, default=1000, help="Maximum tokens for the summary output (default: 1000)")
 
     args = parser.parse_args()
 
@@ -134,7 +136,7 @@ def main():
         print(f"Transcript saved to: {transcript_path}")
 
         # Step 4: Summarize
-        summary = summarize_text(transcript, args.llm_url, args.llm_key, args.llm_model)
+        summary = summarize_text(transcript, args.llm_url, args.llm_key, args.llm_model, args.max_tokens)
         with open(summary_path, "w", encoding="utf-8") as f:
             f.write(summary)
         print(f"Summary saved to: {summary_path}")
